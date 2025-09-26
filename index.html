@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Paint Alan</title>
+  <style>
+    body {
+      display: flex;
+      font-family: Arial, sans-serif;
+    }
+    #canvas {
+      border: 1px solid black;
+      cursor: crosshair;
+    }
+    #sidebar {
+      margin-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .img-option {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
+    .img-option:hover {
+      border: 2px solid blue;
+    }
+    .img-option.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="500" height="500"></canvas>
+
+  <div id="sidebar">
+    <input type="file" id="imageLoader" accept="image/*" multiple>
+    <div id="imageOptions"></div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const imageLoader = document.getElementById('imageLoader');
+    const imageOptions = document.getElementById('imageOptions');
+    let currentImage = null;
+
+    // Cargar imágenes seleccionadas por el docente
+    imageLoader.addEventListener('change', function(e) {
+      imageOptions.innerHTML = ''; // limpiar antes de cargar nuevas
+      const files = Array.from(e.target.files).slice(0, 3); // máximo 3
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const img = document.createElement('img');
+          img.src = event.target.result;
+          img.classList.add('img-option');
+          imageOptions.appendChild(img);
+
+          // Evento de selección de imagen
+          img.addEventListener('click', () => {
+            if (!currentImage) {
+              currentImage = img;
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              const tempImage = new Image();
+              tempImage.src = img.src;
+              tempImage.onload = () => {
+                ctx.drawImage(tempImage, 0, 0, canvas.width, canvas.height);
+              };
+
+              // Deshabilitar las demás
+              document.querySelectorAll('.img-option').forEach(otherImg => {
+                if (otherImg !== img) {
+                  otherImg.classList.add('disabled');
+                }
+              });
+            }
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+  </script>
+</body>
+</html>
